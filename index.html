@@ -23,6 +23,7 @@
             --border: #333333;
             --insta-blue: #3897f0;
             --font: 'Poppins', sans-serif;
+            --sidebar-width: 260px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -53,8 +54,21 @@
             font-weight: 600; padding: 12px 24px; border-radius: 30px; width: 100%; margin-top: 10px;
         }
 
-        .btn-danger { background-color: var(--danger); color: white; border: none; }
+        .btn-danger { background-color: var(--danger); color: white; border: none; box-shadow: none; }
         
+        .google-btn {
+            background: white; color: #333; font-weight: 600; margin-top: 15px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .or-divider {
+            display: flex; align-items: center; color: var(--text-sec); margin: 20px 0; font-size: 0.9rem;
+        }
+        .or-divider::before, .or-divider::after {
+            content: ""; flex: 1; height: 1px; background: #333;
+        }
+        .or-divider::before { margin-right: 10px; }
+        .or-divider::after { margin-left: 10px; }
+
         input {
             width: 100%; background: var(--card-bg); border: 1px solid var(--border);
             color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px;
@@ -70,9 +84,8 @@
         .verified-badge .fa-certificate { color: var(--insta-blue); font-size: 18px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); }
         .verified-badge .fa-check { color: white; font-size: 9px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-        /* Seen Status Ticks */
-        .msg-status { font-size: 0.7rem; margin-left: 5px; color: #888; } /* Default Grey */
-        .msg-status.seen { color: var(--insta-blue); } /* Seen Blue */
+        .msg-status { font-size: 0.7rem; margin-left: 5px; color: #888; } 
+        .msg-status.seen { color: var(--insta-blue); } 
 
         /* --- Screen Containers --- */
         .screen { 
@@ -96,16 +109,16 @@
 
         .footer { margin-top: 20px; padding-bottom: 40px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;}
         .footer-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 20px; background: #222; color: white; text-decoration: none; font-size: 0.8rem; border: 1px solid #333; }
-        .footer-btn i { font-size: 1.1rem; }
 
         /* 2. Auth & Setup */
-        .auth-container { display: flex; flex-direction: column; justify-content: center; height: 100%; padding: 30px; }
+        .auth-container { display: flex; flex-direction: column; justify-content: center; height: 100%; padding: 30px; max-width: 500px; margin: 0 auto; width: 100%; }
         .emoji-picker { font-size: 3rem; text-align: center; margin: 20px auto; cursor: pointer; border: 2px dashed var(--border); border-radius: 50%; width: 100px; height: 100px; line-height: 90px; }
 
         /* 3. Main App Layout */
         .app-header {
             padding: 15px 20px; background: rgba(10,10,10,0.95); border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center; z-index: 50;
+            width: 100%;
         }
         .app-logo { font-weight: 800; font-size: 1.2rem; }
         .app-logo span { color: var(--primary); font-size: 0.8rem; display: block; font-weight: 400; }
@@ -118,21 +131,39 @@
         .dropdown-item { padding: 12px; font-size: 0.9rem; color: white; cursor: pointer; border-bottom: 1px solid #333; }
         .dropdown-item:hover { background: #222; }
 
-        .content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        .content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; width: 100%; }
 
+        /* Bottom Nav (Mobile Default) */
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%; background: var(--card-bg); border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; padding: 12px 0; z-index: 50;
+            display: flex; justify-content: space-around; padding: 12px 0; z-index: 50; transition: 0.3s;
         }
         .nav-item { color: var(--text-sec); text-align: center; font-size: 0.7rem; cursor: pointer; flex: 1; }
         .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
         .nav-item.admin-active { color: var(--admin-color); }
 
+        /* DESKTOP SIDEBAR LOGIC */
+        @media (min-width: 768px) {
+            .bottom-nav {
+                top: 0; left: 0; width: var(--sidebar-width); height: 100vh;
+                flex-direction: column; justify-content: flex-start;
+                padding-top: 80px; border-top: none; border-right: 1px solid var(--border);
+                align-items: center;
+            }
+            .nav-item { flex: 0; margin-bottom: 30px; width: 100%; text-align: left; padding-left: 40px; display: flex; align-items: center; gap: 15px; font-size: 1rem; }
+            .nav-item i { font-size: 1.2rem; margin-bottom: 0; display: inline-block; width: 30px; }
+            
+            .content-area { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding-bottom: 0; }
+            .app-header { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+            
+            /* Sidebar Logo Area placeholder if needed, currently reusing app-header logic */
+        }
+
         .user-list-item {
             display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; cursor: pointer; transition: background 0.2s;
         }
-        .user-list-item:active { background: #1a1a1a; }
+        .user-list-item:active, .user-list-item:hover { background: #1a1a1a; }
         .avatar { width: 50px; height: 50px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-right: 15px; border: 2px solid var(--primary); flex-shrink: 0; }
         .user-info { flex: 1; min-width: 0; }
         .user-name { font-weight: 600; color: white; font-size: 1rem; display: flex; align-items: center;}
@@ -165,6 +196,16 @@
         }
         .chat-input { flex: 1; background: #222; border: none; border-radius: 20px; color: white; padding: 10px 15px; margin: 0; }
         .chat-action-btn { color: var(--primary); font-size: 1.4rem; padding: 8px; cursor: pointer; transition: 0.2s; }
+
+        /* Block Status UI */
+        .blocked-msg-bar {
+            background: #222; color: #ff5252; text-align: center; padding: 15px; 
+            font-size: 0.9rem; border-top: 1px solid #333; display: none;
+        }
+        .unblock-btn-bar {
+            background: var(--card-bg); padding: 10px; display: none; justify-content: center;
+            border-top: 1px solid #333;
+        }
 
         /* 5. Profile Preview & Admin */
         .profile-view-modal {
@@ -200,6 +241,7 @@
 
     <div id="toast" class="toast">Notification</div>
 
+    <!-- Confirm Modal -->
     <div id="confirm-modal" class="confirm-overlay">
         <div class="confirm-box">
             <h3 id="confirm-title" style="color:white; margin-bottom:10px;">Confirm</h3>
@@ -219,25 +261,18 @@
         <button id="get-started-btn" class="btn-primary" onclick="handleGetStarted()">Get Started</button>
 
         <div style="margin-top: 30px;">
-            <!-- Verification Card -->
             <div class="feature-card" style="border-left-color: var(--insta-blue);">
                 <h3 style="color: var(--insta-blue);">Get Verified!</h3>
                 <p>Users who join both our <a href="https://t.me/apnaadda_official" target="_blank">Telegram</a> and <a href="https://whatsapp.com/channel/0029Vb7K9Ms3gvWeXnfpLy3x" target="_blank">WhatsApp</a> channels can get the Blue Tick verified badge.</p>
             </div>
-
-            <!-- Encryption Card -->
             <div class="feature-card">
                 <h3>End-to-end encrypted</h3>
                 <p>100% private & secure environment. Your messages are protected.</p>
             </div>
-
-            <!-- Fast Messaging Card -->
             <div class="feature-card">
                 <h3>Fast messaging</h3>
                 <p>Real-time data transmission ensures your texts are delivered instantly.</p>
             </div>
-
-            <!-- Powered By Card -->
             <div class="feature-card">
                 <h3>Powered by APNA ADDA</h3>
                 <p>Technology for everyday growth. <a href="https://apnaaddatech.github.io/Official_/" target="_blank">CLICK HERE FOR OFFICIAL WEB</a></p>
@@ -263,11 +298,18 @@
         <div class="auth-container">
             <h2 class="hero-title" style="margin-top:0">Welcome</h2>
             <p class="hero-subtitle">Log in to NAMASTE</p>
+            
             <div id="auth-forms">
                 <div id="login-form">
                     <input type="email" id="login-email" placeholder="Email Address">
                     <input type="password" id="login-pass" placeholder="Password">
                     <button class="btn-primary" onclick="login()">Login</button>
+                    
+                    <div class="or-divider">OR</div>
+                    <button class="btn-primary google-btn" onclick="googleLogin()">
+                        <i class="fab fa-google"></i> Continue with Google
+                    </button>
+
                     <button class="btn-outline" onclick="toggleAuthMode()">Create Account</button>
                 </div>
                 <div id="signup-form" class="hidden">
@@ -333,11 +375,20 @@
             </div>
         </div>
 
+        <!-- Sidebar / Footer -->
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('chats')" id="nav-chats"><i class="fas fa-comment-alt"></i> Chats</div>
-            <div class="nav-item" onclick="switchTab('search')" id="nav-search"><i class="fas fa-search"></i> Search</div>
-            <div class="nav-item" onclick="switchTab('profile')" id="nav-profile"><i class="fas fa-user"></i> Profile</div>
-            <div class="nav-item hidden" onclick="switchTab('admin')" id="nav-admin"><i class="fas fa-shield-alt"></i> Admin</div>
+            <div class="nav-item active" onclick="switchTab('chats')" id="nav-chats">
+                <i class="fas fa-comment-alt"></i> <span>Chats</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('search')" id="nav-search">
+                <i class="fas fa-search"></i> <span>Search</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')" id="nav-profile">
+                <i class="fas fa-user"></i> <span>Profile</span>
+            </div>
+            <div class="nav-item hidden" onclick="switchTab('admin')" id="nav-admin">
+                <i class="fas fa-shield-alt"></i> <span>Admin</span>
+            </div>
         </div>
     </div>
 
@@ -362,12 +413,20 @@
 
         <div class="messages-container" id="messages-list"></div>
 
+        <!-- Chat Controls: Standard, Blocked by User, Unblock Option -->
         <div class="chat-input-area" id="chat-input-area">
             <input type="text" class="chat-input" id="message-input" placeholder="Type a message...">
             <i class="fas fa-paper-plane chat-action-btn" onclick="sendTextMessage()"></i>
         </div>
-        <div id="blocked-msg-bar" style="background:#222; color:red; text-align:center; padding:10px; display:none; font-size:0.8rem;">
-            You cannot reply to this conversation.
+
+        <div id="blocked-msg-bar" class="blocked-msg-bar">
+            The user blocked you. You are not able to send message.
+        </div>
+
+        <div id="unblock-btn-bar" class="unblock-btn-bar">
+            <button class="btn-primary" style="width: auto; background-color: white; color: black;" onclick="unblockCurrentChatUser()">
+                UNBLOCK USER
+            </button>
         </div>
     </div>
 
@@ -391,7 +450,7 @@
     <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, set, get, child, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
@@ -407,6 +466,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        const googleProvider = new GoogleAuthProvider();
 
         let currentUser = null;
         let currentChatId = null;
@@ -470,6 +530,14 @@
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-pass').value;
             createUserWithEmailAndPassword(auth, email, pass).then(() => showScreen('setup-screen')).catch(e => showToast(e.message));
+        };
+
+        window.googleLogin = () => {
+            signInWithPopup(auth, googleProvider).then((result) => {
+                showScreen('main-app-screen');
+            }).catch((error) => {
+                showToast("Google Auth Failed: " + error.message);
+            });
         };
 
         window.logout = () => {
@@ -655,17 +723,62 @@
         };
         window.closeChat = () => { document.getElementById('chat-room').classList.add('hidden'); currentChatId = null; loadChats(); };
 
-        function checkBlockStatus(otherUid) {
-            get(child(ref(db), `blocked/${otherUid}/${currentUser.uid}`)).then(s => {
-                if (s.exists()) {
-                    document.getElementById('chat-input-area').style.display = 'none';
-                    document.getElementById('blocked-msg-bar').style.display = 'block';
-                } else {
-                    document.getElementById('chat-input-area').style.display = 'flex';
-                    document.getElementById('blocked-msg-bar').style.display = 'none';
-                }
-            });
+        // --- BLOCKING LOGIC ---
+        async function checkBlockStatus(otherUid) {
+            // 1. Check if I blocked them
+            const iBlockedSnap = await get(child(ref(db), `blocked/${currentUser.uid}/${otherUid}`));
+            const iBlocked = iBlockedSnap.exists();
+
+            // 2. Check if they blocked me
+            const theyBlockedSnap = await get(child(ref(db), `blocked/${otherUid}/${currentUser.uid}`));
+            const theyBlocked = theyBlockedSnap.exists();
+
+            const inputArea = document.getElementById('chat-input-area');
+            const blockedMsgBar = document.getElementById('blocked-msg-bar');
+            const unblockBtnBar = document.getElementById('unblock-btn-bar');
+
+            // Reset UI
+            inputArea.style.display = 'none';
+            blockedMsgBar.style.display = 'none';
+            unblockBtnBar.style.display = 'none';
+
+            if (iBlocked) {
+                // If I blocked them, I see the option to Unblock
+                unblockBtnBar.style.display = 'flex';
+            } else if (theyBlocked) {
+                // If they blocked me (and I haven't blocked them), I see the error message
+                blockedMsgBar.style.display = 'block';
+            } else {
+                // No blocks, normal chat
+                inputArea.style.display = 'flex';
+            }
         }
+
+        window.blockCurrentUser = () => {
+            confirmAction("Block User", `Are you sure you want to block ${currentChatUser.name}?`, () => {
+                set(ref(db, `blocked/${currentUser.uid}/${currentChatUser.uid}`), true).then(() => { 
+                    showToast("User Blocked");
+                    checkBlockStatus(currentChatUser.uid);
+                });
+            });
+        };
+
+        window.unblockCurrentChatUser = () => {
+            confirmAction("Unblock User", "Are you sure you want to unblock this user?", () => {
+                remove(ref(db, `blocked/${currentUser.uid}/${currentChatUser.uid}`)).then(() => {
+                    showToast("User Unblocked");
+                    checkBlockStatus(currentChatUser.uid);
+                });
+            });
+        };
+
+        // General Unblock (from list)
+        window.unblock = (uid) => {
+            confirmAction("Unblock", "Unblock this user?", () => {
+                remove(ref(db, `blocked/${currentUser.uid}/${uid}`)).then(() => showBlockedList());
+            });
+        };
+
         function renderMessage(msg, key) {
             const isMe = msg.sender === currentUser.uid;
             const div = document.createElement('div');
@@ -692,21 +805,28 @@
                 <div class="msg-delete" onclick="deleteMessage('${key}')"><i class="fas fa-trash"></i></div>`;
             document.getElementById('messages-list').appendChild(div);
         }
+        
         window.sendTextMessage = () => {
             const text = document.getElementById('message-input').value.trim();
             if(!text) return;
-            pushMessage('text', text);
-            document.getElementById('message-input').value = "";
-        };
-        function pushMessage(type, content) {
+            // Double check block status before sending to be safe
             get(child(ref(db), `blocked/${currentChatUser.uid}/${currentUser.uid}`)).then(s => {
-                if(s.exists()) return showToast("You are blocked");
-                const msgData = { sender: currentUser.uid, type, content, timestamp: Date.now(), status: 'sent' };
-                push(ref(db, `chats/${currentChatId}/messages`), msgData);
-                const meta = { lastMessage: type==='text'?content:'Media', timestamp: Date.now(), with: currentChatUser.uid };
-                update(ref(db, `userChats/${currentUser.uid}/${currentChatId}`), meta);
-                update(ref(db, `userChats/${currentChatUser.uid}/${currentChatId}`), { ...meta, with: currentUser.uid });
+                if(s.exists()) {
+                    showToast("You cannot send messages");
+                    checkBlockStatus(currentChatUser.uid); // Refresh UI
+                } else {
+                    pushMessage('text', text);
+                    document.getElementById('message-input').value = "";
+                }
             });
+        };
+
+        function pushMessage(type, content) {
+            const msgData = { sender: currentUser.uid, type, content, timestamp: Date.now(), status: 'sent' };
+            push(ref(db, `chats/${currentChatId}/messages`), msgData);
+            const meta = { lastMessage: type==='text'?content:'Media', timestamp: Date.now(), with: currentChatUser.uid };
+            update(ref(db, `userChats/${currentUser.uid}/${currentChatId}`), meta);
+            update(ref(db, `userChats/${currentChatUser.uid}/${currentChatId}`), { ...meta, with: currentUser.uid });
         }
         window.deleteMessage = (key) => confirmAction("Delete", "Delete message?", () => remove(ref(db, `chats/${currentChatId}/messages/${key}`)));
 
@@ -732,9 +852,9 @@
             });
         }
         window.deleteEntireChat = (id, e) => { if(e) e.stopPropagation(); confirmAction("Delete", "Remove chat?", () => remove(ref(db, `userChats/${currentUser.uid}/${id}`))); }
-        window.blockCurrentUser = () => confirmAction("Block", `Block ${currentChatUser.name}?`, () => set(ref(db, `blocked/${currentUser.uid}/${currentChatUser.uid}`), true).then(() => { showToast("Blocked"); closeChat(); }));
+        
         window.showBlockedList = () => { switchTab('blocked'); document.getElementById('main-menu').classList.remove('show'); get(child(ref(db), `blocked/${currentUser.uid}`)).then(snap => { const cont = document.getElementById('blocked-list-container'); cont.innerHTML = ""; if(!snap.exists()) cont.innerHTML = "No blocked users"; snap.forEach(b => { get(child(ref(db), `users/${b.key}`)).then(u => { const div = document.createElement('div'); div.className = 'user-list-item'; div.innerHTML = `<div class="user-name">${u.val().name}</div><button class="btn-outline" style="width:auto;" onclick="unblock('${b.key}')">Unblock</button>`; cont.appendChild(div); }); }); }); };
-        window.unblock = (uid) => remove(ref(db, `blocked/${currentUser.uid}/${uid}`)).then(() => showBlockedList());
+        
         window.viewChatProfile = () => { const p = document.getElementById('profile-preview'); p.classList.remove('hidden'); const badge = currentChatUser.isVerified ? tickHTML.replace('18px', '24px').replace('9px','12px') : ''; document.getElementById('preview-emoji').innerText = currentChatUser.emoji; document.getElementById('preview-name').innerHTML = currentChatUser.name + badge; document.getElementById('preview-username').innerText = "@" + currentChatUser.username; };
         window.closeProfilePreview = () => document.getElementById('profile-preview').classList.add('hidden');
         window.toggleChatMenu = () => document.getElementById('chat-menu').classList.toggle('show');
@@ -744,4 +864,4 @@
         window.closeConfirm = () => { document.getElementById('confirm-modal').style.display='none'; confirmCb=null; };
     </script>
 </body>
-</html>
+            </html>
