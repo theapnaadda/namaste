@@ -261,7 +261,7 @@
         <div style="margin-top: 30px;">
             <div class="feature-card" style="border-left-color: var(--insta-blue);">
                 <h3 style="color: var(--insta-blue);">Get Verified!</h3>
-                <p>Users who join both our <a href="https://t.me/apnaadda_official" target="_blank">Telegram</a> and <a href="https://whatsapp.com/channel/0029Vb7K9Ms3gvWeXnfpLy3x" target="_blank">WhatsApp</a> channels can get the Blue Tick verified badge.</p>
+                <p>Users who join both our <a href="https://t.me/apnaadda_official" target="_blank">Telegram</a> and <a href="https://whatsapp.com/channel/0029VbBpBIy2UPBEjwKlZh18" target="_blank">WhatsApp</a> channels can get the Blue Tick verified badge.</p>
             </div>
             <div class="feature-card">
                 <h3>End-to-end encrypted</h3>
@@ -287,7 +287,7 @@
         <div class="footer">
             <a href="mailto:thepremanshu@gmail.com" class="footer-btn"><i class="fas fa-envelope"></i> Contact</a>
             <a href="https://t.me/apnaadda_official" target="_blank" class="footer-btn"><i class="fab fa-telegram"></i> Telegram</a>
-            <a href="https://whatsapp.com/channel/0029Vb7K9Ms3gvWeXnfpLy3x" target="_blank" class="footer-btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            <a href="https://whatsapp.com/channel/0029VbBpBIy2UPBEjwKlZh18" target="_blank" class="footer-btn"><i class="fab fa-whatsapp"></i> WhatsApp</a>
         </div>
     </div>
 
@@ -475,7 +475,7 @@
         let currentEmojiIdx = 0;
         
         const ADMIN_EMAIL = "thepremanshu@gmail.com";
-        const ADMIN_PASS_REQ = "werttyy";
+        // Removed hardcoded password requirement to allow Google Login for Admin
 
         const tickHTML = `
             <span class="verified-badge">
@@ -488,7 +488,8 @@
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                if(user.email === ADMIN_EMAIL) {
+                // Check if user is Admin
+                if(user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                     document.getElementById('nav-admin').classList.remove('hidden');
                 } else {
                     document.getElementById('nav-admin').classList.add('hidden');
@@ -510,6 +511,9 @@
                         // Profile does NOT exist, force setup
                         showScreen('setup-screen');
                     }
+                }).catch(e => {
+                    showToast("DB Error: Check Rules");
+                    console.error(e);
                 });
             } else {
                 currentUser = null;
@@ -538,8 +542,8 @@
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value.trim();
             if(!email || !pass) return showToast("Enter credentials");
-
-            if (email === ADMIN_EMAIL && pass !== ADMIN_PASS_REQ) return showToast("Invalid Credentials");
+            
+            // Standard Firebase Login (Removed custom password check to fix admin login)
             auth.signInWithEmailAndPassword(email, pass).catch(e => showToast(e.message));
         }
 
@@ -603,7 +607,10 @@
                     
                     db.ref().update(updates).then(() => {
                         showScreen('main-app-screen');
-                    }).catch(e => showToast("Error saving: " + e.message));
+                    }).catch(e => {
+                        console.error(e);
+                        showToast("Error saving. Check DB Rules.");
+                    });
                 }
             });
         }
@@ -642,6 +649,11 @@
                         const badge = u.isVerified ? tickHTML : '';
                         const btnText = u.isVerified ? 'Unverify' : 'Verify';
                         const btnClass = u.isVerified ? 'btn-outline' : 'btn-primary';
+                        
+                        // Prevent deleting self
+                        const delBtn = uid === currentUser.uid ? '' : 
+                            `<button class="btn-danger" style="width:auto; padding:5px 15px; font-size:0.8rem; margin:0; border-radius:30px;" onclick="deleteUserAccount('${uid}', '${u.username}')"><i class="fas fa-trash"></i></button>`;
+
                         div.innerHTML = `
                             <div class="admin-user-info">
                                 <div class="avatar" style="width:40px;height:40px;font-size:1.2rem;">${u.emoji}</div>
@@ -649,7 +661,7 @@
                             </div>
                             <div class="admin-actions">
                                 <button class="${btnClass}" style="width:auto; padding:5px 15px; font-size:0.8rem; margin:0;" onclick="toggleUserVerify('${uid}', ${u.isVerified})">${btnText}</button>
-                                <button class="btn-danger" style="width:auto; padding:5px 15px; font-size:0.8rem; margin:0; border-radius:30px;" onclick="deleteUserAccount('${uid}', '${u.username}')"><i class="fas fa-trash"></i></button>
+                                ${delBtn}
                             </div>
                         `;
                         list.appendChild(div);
@@ -667,12 +679,12 @@
                 const updates = {};
                 updates[`users/${uid}`] = null;
                 updates[`usernames/${username}`] = null;
-                updates[`userChats/${uid}`] = null;
-                // Note: Cleaning up actual chats/messages is complex, skipping for demo
+                updates[`userChats/${uid}`] = null; // Clean up their chat list
+                // Realistically we should clean up all chats referencing them, but this is a start
                 db.ref().update(updates).then(() => {
                     showToast("User Deleted");
                     loadAdminList();
-                });
+                }).catch(e => showToast("Error deleting: " + e.message));
             });
         }
 
@@ -750,47 +762,65 @@
         }
 
         async function openChat(targetUid) {
-            const snap = await db.ref(`users/${targetUid}`).get();
-            if(!snap.exists()) return showToast("User no longer exists");
-            
-            currentChatUser = { ...snap.val(), uid: targetUid };
-            // Consistent chat ID generation
-            currentChatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
-            
-            const badge = currentChatUser.isVerified ? tickHTML : '';
-            document.getElementById('chat-header-name').innerHTML = currentChatUser.name + badge;
-            document.getElementById('chat-header-emoji').innerText = currentChatUser.emoji;
-            document.getElementById('messages-list').innerHTML = "";
-            document.getElementById('chat-room').classList.remove('hidden');
-            
-            checkBlockStatus(targetUid);
+            try {
+                const snap = await db.ref(`users/${targetUid}`).get();
+                if(!snap.exists()) return showToast("User no longer exists");
+                
+                currentChatUser = { ...snap.val(), uid: targetUid };
+                // Consistent chat ID generation
+                currentChatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+                
+                const badge = currentChatUser.isVerified ? tickHTML : '';
+                document.getElementById('chat-header-name').innerHTML = currentChatUser.name + badge;
+                document.getElementById('chat-header-emoji').innerText = currentChatUser.emoji;
+                document.getElementById('messages-list').innerHTML = "";
+                document.getElementById('chat-room').classList.remove('hidden');
+                document.getElementById('chat-menu').classList.remove('show');
+                
+                checkBlockStatus(targetUid);
 
-            // Listen for messages
-            db.ref(`chats/${currentChatId}/messages`).off(); // Remove old listeners
-            db.ref(`chats/${currentChatId}/messages`).on('value', (snapshot) => {
-                const list = document.getElementById('messages-list');
-                list.innerHTML = "";
-                if (snapshot.exists()) {
-                    snapshot.forEach((c) => {
-                        const msg = c.val();
-                        const key = c.key;
-                        renderMessage(msg, key);
-                        
-                        // Mark as SEEN if message is from OTHER user
-                        if (msg.sender !== currentUser.uid && msg.status !== 'seen') {
-                            db.ref(`chats/${currentChatId}/messages/${key}`).update({ status: 'seen' });
-                        }
-                    });
-                    list.scrollTop = list.scrollHeight;
-                }
-            });
+                // Listen for messages
+                db.ref(`chats/${currentChatId}/messages`).off(); // Remove old listeners
+                db.ref(`chats/${currentChatId}/messages`).on('value', (snapshot) => {
+                    const list = document.getElementById('messages-list');
+                    list.innerHTML = "";
+                    if (snapshot.exists()) {
+                        snapshot.forEach((c) => {
+                            const msg = c.val();
+                            const key = c.key;
+                            renderMessage(msg, key);
+                            
+                            // Mark as SEEN if message is from OTHER user
+                            if (msg.sender !== currentUser.uid && msg.status !== 'seen') {
+                                db.ref(`chats/${currentChatId}/messages/${key}`).update({ status: 'seen' });
+                            }
+                        });
+                        list.scrollTop = list.scrollHeight;
+                    }
+                });
+            } catch (e) {
+                showToast("Error opening chat: " + e.message);
+            }
         }
 
         function closeChat() { 
             document.getElementById('chat-room').classList.add('hidden'); 
             if(currentChatId) db.ref(`chats/${currentChatId}/messages`).off();
             currentChatId = null; 
+            currentChatUser = null;
             loadChats(); 
+        }
+
+        function deleteCurrentChat() {
+            if(!currentChatId) return;
+            confirmAction("Delete Chat", "Clear this conversation from your list?", () => {
+                // Deleting from "userChats" hides it from the list
+                db.ref(`userChats/${currentUser.uid}/${currentChatId}`).remove().then(() => {
+                    closeChat();
+                });
+                // Optional: To delete actual messages, one would use db.ref(`chats/${currentChatId}`).remove(), 
+                // but usually we only remove the reference for the user unless it's a "Delete for Everyone" feature.
+            });
         }
 
         // --- BLOCKING LOGIC ---
@@ -823,15 +853,18 @@
         }
 
         function blockCurrentUser() {
+            if(!currentChatUser) return;
             confirmAction("Block User", `Are you sure you want to block ${currentChatUser.name}?`, () => {
                 db.ref(`blocked/${currentUser.uid}/${currentChatUser.uid}`).set(true).then(() => { 
                     showToast("User Blocked");
                     checkBlockStatus(currentChatUser.uid);
+                    document.getElementById('chat-menu').classList.remove('show');
                 });
             });
         }
 
         function unblockCurrentChatUser() {
+            if(!currentChatUser) return;
             confirmAction("Unblock User", "Are you sure you want to unblock this user?", () => {
                 db.ref(`blocked/${currentUser.uid}/${currentChatUser.uid}`).remove().then(() => {
                     showToast("User Unblocked");
